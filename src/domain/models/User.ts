@@ -17,3 +17,20 @@ export interface User {
   full_name: string | null; // profiles.full_name
   created_at: string; // auth.users.created_at
 }
+
+// Interfaz para la tabla 'profiles' de usuarios
+export interface Profile {
+  id: string;
+  full_name: string | null;
+  role: UserRole;
+  avatar_url: string | null;
+}
+
+/**
+ * Datos para actualizar el perfil.
+ */
+export interface ProfileUpdateData {
+  full_name?: string;
+  avatarUri?: string; // URI local de la imagen
+}
+
