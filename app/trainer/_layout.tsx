@@ -2,11 +2,11 @@ import { Stack } from "expo-router";
 import React from "react";
 
 /**
- * Auth Layout - Stack Navigator para las pantallas de autenticación
+ * Trainer Layout - Stack Navigator para las pantallas de entrenador
  *
- * Maneja la navegación entre login y registro dentro del grupo auth
+ * Maneja la navegación entre las diferentes pantallas específicas para entrenadores
  */
-export default function AuthLayout() {
+export default function TrainerLayout() {
   return (
     <Stack
       screenOptions={{
@@ -21,16 +21,9 @@ export default function AuthLayout() {
       }}
     >
       <Stack.Screen
-        name="login"
+        name="crear"
         options={{
-          title: "Iniciar Sesión",
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="register"
-        options={{
-          title: "Registro",
+          title: "Crear",
           headerShown: false,
         }}
       />
