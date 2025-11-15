@@ -15,28 +15,28 @@ export function useAuthLogic() {
   const [usuario, setUsuario] = useState<User | null>(null);
   const [cargando, setCargando] = useState(true);
 
-  console.log('🔵 useAuthLogic - Iniciando hook');
+  console.log("🔵 useAuthLogic - Iniciando hook");
 
   // Usar dependency injection para obtener los casos de uso
   const { authUseCase, storageRepository } = useDependencies();
-  console.log('✅ useAuthLogic - Dependencies obtenidas');
+  console.log("✅ useAuthLogic - Dependencies obtenidas");
 
   useEffect(() => {
-    console.log('🔵 useAuthLogic - useEffect iniciado');
-    
+    console.log("🔵 useAuthLogic - useEffect iniciado");
+
     // Función para verificar sesión inicial
     const verificarSesion = async () => {
       try {
-        console.log('🔍 Verificando sesión persistente...');
+        console.log("🔍 Verificando sesión persistente...");
         const usuarioPersistente =
           await authUseCase.verificarSesionPersistente();
-        console.log('📊 Usuario persistente:', !!usuarioPersistente);
+        console.log("📊 Usuario persistente:", !!usuarioPersistente);
         setUsuario(usuarioPersistente);
       } catch (error) {
         console.error("❌ Error al verificar sesión inicial:", error);
         setUsuario(null);
       } finally {
-        console.log('✅ setCargando(false) - Terminando carga');
+        console.log("✅ setCargando(false) - Terminando carga");
         setCargando(false);
       }
     };

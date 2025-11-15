@@ -67,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const authLogic = useAuthLogic();
     console.log("✅ AuthProvider - authLogic obtenido:", {
       cargando: authLogic.cargando,
-      usuario: !!authLogic.usuario,
+      tieneUsuario: !!authLogic.usuario,
     });
 
     // 2. Pasamos el valor de ese hook al Provider

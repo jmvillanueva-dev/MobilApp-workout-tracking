@@ -175,14 +175,21 @@ export class SupabaseAuthRepository implements IAuthRepository {
       }
 
       // PASO 3: Combinar datos en nuestro modelo 'User'
+      // Limpiar URL del avatar para evitar problemas de dobles barras
+      const cleanAvatarUrl = profileData.avatar_url
+        ? profileData.avatar_url
+            .replace(/\/+/g, "/")
+            .replace("http:/", "http://")
+            .replace("https:/", "https://")
+        : null;
+
       const fullUser: User = {
         id: authUser.id,
         email: authUser.email,
         created_at: authUser.created_at,
         role: profileData.role,
         full_name: profileData.full_name,
-        // Asumiendo que avatar_url está en el modelo User
-        // avatar_url: profileData.avatar_url,
+        avatar_url: cleanAvatarUrl,
       };
 
       return fullUser;

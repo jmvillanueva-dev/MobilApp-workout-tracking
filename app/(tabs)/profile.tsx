@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -9,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth, useProfile } from "../../src/presentation/hooks";
 
@@ -17,7 +17,7 @@ import { useAuth, useProfile } from "../../src/presentation/hooks";
  * Pantalla de Perfil
  */
 export default function ProfileScreen() {
-  const { usuario } = useAuth();
+  const { usuario, cerrarSesion } = useAuth();
   const {
     cargando,
     error,
@@ -29,6 +29,20 @@ export default function ProfileScreen() {
 
   const [nombre, setNombre] = useState(usuario?.full_name || "");
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const [avatarKey, setAvatarKey] = useState(0); // Para forzar re-render del Image
+
+  // Sincronizar el estado local con los datos del usuario (solo al montar o cambiar usuario)
+  useEffect(() => {
+    if (usuario) {
+      setNombre(usuario.full_name || "");
+      setAvatarUri(null); // Limpiar para mostrar la imagen del servidor
+      setAvatarError(false);
+      setAvatarLoading(false);
+      setAvatarKey((prev) => prev + 1); // Incrementar key para forzar re-render
+    }
+  }, [usuario]); // Depende del usuario completo
 
   /**
    * Maneja la selección de avatar desde galería
@@ -55,6 +69,30 @@ export default function ProfileScreen() {
   };
 
   /**
+   * Maneja el cierre de sesión
+   */
+  const handleCerrarSesion = async () => {
+    Alert.alert(
+      "Cerrar Sesión",
+      "¿Estás seguro de que quieres cerrar sesión?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Cerrar Sesión",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await cerrarSesion();
+            } catch {
+              Alert.alert("Error", "No se pudo cerrar la sesión");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  /**
    * Maneja la actualización del perfil
    */
   const handleActualizarPerfil = async () => {
@@ -73,9 +111,13 @@ export default function ProfileScreen() {
     }
 
     const resultado = await actualizarPerfil(updateData);
+
     if (resultado.success) {
       Alert.alert("Éxito", "Perfil actualizado correctamente");
-      setAvatarUri(null); // Limpiar la URI local después de subir
+      // Limpiar la URI local para forzar el uso de la nueva imagen del servidor
+      setAvatarUri(null);
+      setAvatarError(false); // Resetear error para intentar cargar nueva imagen
+      setAvatarKey((prev) => prev + 1); // Forzar re-render del avatar
     } else {
       Alert.alert("Error", resultado.error || "Error al actualizar perfil");
     }
@@ -109,15 +151,52 @@ export default function ProfileScreen() {
         style={styles.avatarContainer}
         onPress={mostrarOpcionesAvatar}
       >
-        <Image
-          source={{
-            uri:
-              avatarUri ||
-              usuario.avatar_url ||
-              "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
-          }}
-          style={styles.avatar}
-        />
+        {!avatarError && (
+          <>
+            {avatarLoading && (
+              <View style={[styles.avatar, styles.loadingAvatar]}>
+                <ActivityIndicator size="large" color="#007AFF" />
+              </View>
+            )}
+            <Image
+              source={{
+                uri: avatarUri
+                  ? avatarUri
+                  : usuario.avatar_url && usuario.avatar_url.length > 0
+                  ? `${usuario.avatar_url}?cache=${avatarKey}` // Usar avatarKey para cache busting
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      usuario.full_name || usuario.email?.charAt(0) || "U"
+                    )}&size=200&background=007AFF&color=fff`,
+                cache: "reload", // Forzar recarga de la imagen
+              }}
+              style={[styles.avatar, avatarLoading && { opacity: 0 }]}
+              key={`avatar-${avatarKey}`} // Key único que se incrementa con cada cambio
+              onLoadStart={() => {
+                setAvatarLoading(true);
+                setAvatarError(false);
+              }}
+              onLoad={() => {
+                setAvatarLoading(false);
+                setAvatarError(false);
+              }}
+              onError={() => {
+                setAvatarLoading(false);
+                setAvatarError(true);
+              }}
+            />
+          </>
+        )}
+        {avatarError && (
+          <Image
+            source={{
+              uri: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                usuario.full_name || usuario.email?.charAt(0) || "U"
+              )}&size=200&background=007AFF&color=fff`,
+            }}
+            style={styles.avatar}
+            key={`fallback-${usuario.id}`}
+          />
+        )}
         <Text style={styles.changeAvatarText}>Cambiar Foto</Text>
       </TouchableOpacity>
 
@@ -163,6 +242,19 @@ export default function ProfileScreen() {
           <Text style={styles.updateButtonText}>Actualizar Perfil</Text>
         )}
       </TouchableOpacity>
+
+      {/* Botón de cerrar sesión */}
+      <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={handleCerrarSesion}
+      >
+        <IconSymbol
+          name="rectangle.portrait.and.arrow.right"
+          color="white"
+          size={20}
+        />
+        <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -189,6 +281,26 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     backgroundColor: "#ddd",
+  },
+  loadingAvatar: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+  },
+  errorAvatar: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffebee",
+  },
+  errorAvatarText: {
+    fontSize: 24,
+  },
+  errorAvatarSmall: {
+    fontSize: 10,
+    color: "#c62828",
+    marginTop: 2,
   },
   changeAvatarText: {
     marginTop: 8,
@@ -261,5 +373,20 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+  },
+  logoutButton: {
+    backgroundColor: "#dc3545",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 12,
+  },
+  logoutButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
   },
 });

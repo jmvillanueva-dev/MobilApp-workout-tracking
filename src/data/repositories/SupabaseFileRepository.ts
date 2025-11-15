@@ -40,7 +40,13 @@ export class SupabaseFileRepository implements IFileRepository {
         data: { publicUrl },
       } = this.supabase.storage.from("avatars").getPublicUrl(data.path);
 
-      return { success: true, data: publicUrl };
+      // 6. Limpiar URL para evitar dobles barras
+      const cleanUrl = publicUrl
+        .replace(/\/+/g, "/")
+        .replace("http:/", "http://")
+        .replace("https:/", "https://");
+
+      return { success: true, data: cleanUrl };
     } catch (error: any) {
       console.error("Error al subir avatar:", error);
       return { success: false, error: error.message };
