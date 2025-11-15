@@ -1,6 +1,6 @@
 /**
  * Interfaz para el repositorio de archivos/multimedia
- * Define las operaciones para el manejo de archivos (imágenes, etc.)
+ * Define las operaciones para el manejo de archivos (imágenes, videos, etc.)
  */
 export interface IFileRepository {
   /**
@@ -14,6 +14,21 @@ export interface IFileRepository {
     uri: string,
     userId: string,
     fileName?: string
+  ): Promise<{
+    success: boolean;
+    data?: string; // URL pública
+    error?: string;
+  }>;
+
+  /**
+   * Sube un video al storage
+   * @param uri - URI local del video
+   * @param fileName - Nombre del archivo
+   * @returns URL pública del video subido
+   */
+  subirVideo(
+    uri: string,
+    fileName: string
   ): Promise<{
     success: boolean;
     data?: string; // URL pública
