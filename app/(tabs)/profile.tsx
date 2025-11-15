@@ -82,7 +82,11 @@ export default function ProfileScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await cerrarSesion();
+              const resultado = await cerrarSesion();
+              if (!resultado.success) {
+                Alert.alert("Error", "No se pudo cerrar la sesión");
+              }
+              // La navegación se maneja automáticamente en el auth listener
             } catch {
               Alert.alert("Error", "No se pudo cerrar la sesión");
             }
@@ -136,9 +140,9 @@ export default function ProfileScreen() {
 
   if (!usuario) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>No hay usuario autenticado</Text>
-      </View>
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.errorText}>Cerrando sesión...</Text>
+      </SafeAreaView>
     );
   }
 
