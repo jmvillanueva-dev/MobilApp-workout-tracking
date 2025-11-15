@@ -1,8 +1,12 @@
 import React, { createContext, ReactNode, useContext } from "react";
 import { AsyncStorageRepository } from "../../data/repositories/AsyncStorageRepository";
 import { SupabaseAuthRepository } from "../../data/repositories/SupabaseAuthRepository";
+import { SupabaseFileRepository } from "../../data/repositories/SupabaseFileRepository";
+import { SupabaseProfileRepository } from "../../data/repositories/SupabaseProfileRepository";
 import { supabase } from "../../data/services/supabaseClient";
 import { IAuthRepository } from "../../domain/repositories/IAuthRepository";
+import { IFileRepository } from "../../domain/repositories/IFileRepository";
+import { IProfileRepository } from "../../domain/repositories/IProfileRepository";
 import { IStorageRepository } from "../../domain/repositories/IStorageRepository";
 import { AuthUseCase } from "../../domain/useCases/AuthUseCase";
 import { MediaUseCase } from "../../domain/useCases/MediaUseCase";
@@ -14,6 +18,8 @@ import { ProfileUseCase } from "../../domain/useCases/ProfileUseCase";
 interface Dependencies {
   authRepository: IAuthRepository;
   storageRepository: IStorageRepository;
+  profileRepository: IProfileRepository;
+  fileRepository: IFileRepository;
   authUseCase: AuthUseCase;
   profileUseCase: ProfileUseCase;
   mediaUseCase: MediaUseCase;
@@ -46,17 +52,26 @@ export const useDependencies = (): Dependencies => {
 export const DependencyProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  // Crear repositorios
   const authRepository = new SupabaseAuthRepository(supabase);
   const storageRepository = new AsyncStorageRepository();
+  const profileRepository = new SupabaseProfileRepository(supabase);
+  const fileRepository = new SupabaseFileRepository(supabase);
 
   // Crear casos de uso con dependency injection
   const authUseCase = new AuthUseCase(authRepository, storageRepository);
-  const profileUseCase = new ProfileUseCase(); // TODO: Refactorizar también
+  const profileUseCase = new ProfileUseCase(
+    profileRepository,
+    fileRepository,
+    authRepository
+  );
   const mediaUseCase = new MediaUseCase(); // TODO: Refactorizar también
 
   const dependencies: Dependencies = {
     authRepository,
     storageRepository,
+    profileRepository,
+    fileRepository,
     authUseCase,
     profileUseCase,
     mediaUseCase,

@@ -15,6 +15,7 @@ export interface User {
   email?: string; // auth.users.email
   role: UserRole; // profiles.role
   full_name: string | null; // profiles.full_name
+  avatar_url: string | null;
   created_at: string; // auth.users.created_at
 }
 
