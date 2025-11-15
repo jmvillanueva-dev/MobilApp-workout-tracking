@@ -51,7 +51,10 @@ const MAPPING = {
   "envelope.fill": "email",
   "phone.fill": "phone",
   "location.fill": "location-on",
-  
+
+  // --- Sesión ---
+  "rectangle.portrait.and.arrow.right": "logout",
+
   // --- Misceláneo ---
   "gearshape.fill": "settings",
   "paperplane.fill": "send",
