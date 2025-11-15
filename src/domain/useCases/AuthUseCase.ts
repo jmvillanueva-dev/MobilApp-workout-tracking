@@ -75,6 +75,7 @@ export class AuthUseCase {
       if (resultado.success) {
         // Limpiar datos de sesión guardados localmente
         await this.storageRepository.clearSessionData();
+        
       }
 
       return resultado;

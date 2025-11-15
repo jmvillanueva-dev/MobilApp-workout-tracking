@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { router } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import { User, UserRole } from "../../domain/models/User";
 import { useDependencies } from "../providers/DependencyProvider";
 
@@ -14,6 +15,9 @@ import { useDependencies } from "../providers/DependencyProvider";
 export function useAuthLogic() {
   const [usuario, setUsuario] = useState<User | null>(null);
   const [cargando, setCargando] = useState(true);
+
+  // Referencia para mantener el valor anterior del usuario
+  const usuarioAnteriorRef = useRef<User | null>(null);
 
   console.log("🔵 useAuthLogic - Iniciando hook");
 
@@ -47,6 +51,26 @@ export function useAuthLogic() {
     // SUSCRIBIRSE: Escuchar cambios de autenticación
     const { data: subscription } = authUseCase.onAuthStateChange(
       async (user) => {
+        console.log(
+          "🔄 Auth state change detectado - Usuario anterior:",
+          !!usuarioAnteriorRef.current,
+          "Usuario nuevo:",
+          !!user
+        );
+
+        // Si había usuario y ahora no hay (SIGNED_OUT), navegar al login
+        if (usuarioAnteriorRef.current && !user) {
+          console.log("🚪 Usuario desconectado, navegando a login...");
+          // Limpiar storage
+          await storageRepository.removeItem("wtapp_current_user");
+          // Usar setTimeout para evitar conflictos de navegación
+          setTimeout(() => {
+            router.replace("/auth/login");
+          }, 100);
+        }
+
+        // Actualizar el usuario y guardar la referencia
+        usuarioAnteriorRef.current = user;
         setUsuario(user);
         setCargando(false);
 
@@ -95,7 +119,15 @@ export function useAuthLogic() {
    * Cerrar sesión
    */
   const cerrarSesion = async () => {
-    return await authUseCase.cerrarSesion();
+    try {
+      console.log("🚪 Iniciando proceso de cerrar sesión...");
+      const resultado = await authUseCase.cerrarSesion();
+      // La navegación se maneja automáticamente en el auth state change listener
+      return resultado;
+    } catch (error: any) {
+      console.error("Error al cerrar sesión:", error);
+      return { success: false, error: error.message };
+    }
   };
 
   /**
