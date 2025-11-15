@@ -53,6 +53,52 @@ export class SupabaseFileRepository implements IFileRepository {
     }
   }
 
+  async subirVideo(uri: string, fileName: string) {
+    try {
+      console.log("📹 Subiendo video:", fileName);
+
+      // 1. Leer archivo usando fetch
+      const response = await fetch(uri);
+      const arrayBuffer = await response.arrayBuffer();
+
+      // 2. Definir extensión y tipo de contenido para videos
+      const fileExt = "mp4";
+      const contentType = "video/mp4";
+
+      // 3. Generar nombre de archivo único
+      const finalFileName = `${fileName}_${new Date().getTime()}.${fileExt}`;
+      const filePath = `ejercicios/${finalFileName}`;
+
+      // 4. Subir a Supabase Storage (bucket 'videos' o 'ejercicios')
+      const { data, error } = await this.supabase.storage
+        .from("videos")
+        .upload(filePath, arrayBuffer, {
+          contentType,
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (error) throw error;
+
+      // 5. Obtener URL pública
+      const {
+        data: { publicUrl },
+      } = this.supabase.storage.from("videos").getPublicUrl(data.path);
+
+      // 6. Limpiar URL para evitar dobles barras
+      const cleanUrl = publicUrl
+        .replace(/\/+/g, "/")
+        .replace("http:/", "http://")
+        .replace("https:/", "https://");
+
+      console.log("✅ Video subido exitosamente:", cleanUrl);
+      return { success: true, data: cleanUrl };
+    } catch (error: any) {
+      console.error("❌ Error al subir video:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
   async eliminarArchivo(filePath: string) {
     try {
       const { error } = await this.supabase.storage
