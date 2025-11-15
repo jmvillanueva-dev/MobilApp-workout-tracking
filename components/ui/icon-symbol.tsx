@@ -26,7 +26,7 @@ const MAPPING = {
   // --- Rutinas y ejercicios ---
   "dumbbell.fill": "fitness-center", // rutinas
   "list.bullet.clipboard.fill": "assignment", // plan de entrenamiento
-  "calendar": "calendar-month", // calendario de rutinas
+  calendar: "calendar-month", // calendario de rutinas
   "clock.fill": "access-time", // duración de rutina
 
   // --- Progreso ---
@@ -47,6 +47,11 @@ const MAPPING = {
   // --- Comunicación ---
   "message.fill": "chat",
 
+  // --- Contacto ---
+  "envelope.fill": "email",
+  "phone.fill": "phone",
+  "location.fill": "location-on",
+  
   // --- Misceláneo ---
   "gearshape.fill": "settings",
   "paperplane.fill": "send",
