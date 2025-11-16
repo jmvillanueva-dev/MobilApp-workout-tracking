@@ -17,10 +17,27 @@ export class TrainingPlanUseCase {
    */
   async obtenerMisPlanes() {
     try {
-      console.log("🏃 TrainingPlanUseCase - Obteniendo mis planes");
-      // Por ahora retornamos todos, pero deberíamos filtrar por entrenador
-      // En el repositorio se manejará el filtro por el usuario actual
-      return { success: true, data: [] }; // Placeholder por ahora
+      console.log(
+        "🏃 TrainingPlanUseCase - Obteniendo mis planes como entrenador"
+      );
+
+      // Usar el método del repository que obtiene automáticamente el entrenador actual
+      const result = await (
+        this.trainingPlanRepository as any
+      ).obtenerPorEntrenadorActual();
+
+      if (result.success) {
+        console.log(
+          `✅ ${result.data?.length || 0} planes del entrenador obtenidos`
+        );
+      } else {
+        console.error(
+          "❌ Error obteniendo planes del entrenador:",
+          result.error
+        );
+      }
+
+      return result;
     } catch (error: any) {
       console.error("❌ Error en obtenerMisPlanes:", error);
       return { success: false, error: error.message };

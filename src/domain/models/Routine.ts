@@ -38,6 +38,7 @@ export interface RoutineExercise {
 export interface CreateRoutineRequest {
   name: string;
   description?: string;
+  daysOfWeek: string[];
   exercises: CreateRoutineExerciseRequest[];
 }
 
