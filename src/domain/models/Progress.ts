@@ -22,11 +22,33 @@ export interface WorkoutLog {
   };
 }
 
+// /**
+//  * WorkoutLog - Registro de entrenamiento completado
+//  */
+// export interface WorkoutLog {
+//   id: number;
+//   userId: string;
+//   routineId: number;
+//   completedAt: Date;
+//   notes?: string;
+//   createdAt: Date;
+//   updatedAt: Date;
+
+//   // Datos relacionales opcionales
+//   routine?: {
+//     id: number;
+//     name: string;
+//     description?: string;
+//   };
+// }
+
 /**
- * CreateWorkoutLogRequest - Datos necesarios para registrar un entrenamiento
+ * CreateWorkoutLogRequest - Datos para crear un nuevo log de entrenamiento
  */
 export interface CreateWorkoutLogRequest {
+  userId: string;
   routineId: number;
+  completedAt?: Date;
   notes?: string;
 }
 
@@ -34,6 +56,7 @@ export interface CreateWorkoutLogRequest {
  * UpdateWorkoutLogRequest - Datos para actualizar un registro de entrenamiento
  */
 export interface UpdateWorkoutLogRequest {
+  id: number;
   notes?: string;
 }
 
@@ -45,19 +68,60 @@ export interface UpdateWorkoutLogRequest {
 export interface ProgressPhoto {
   id: number;
   userId: string; // UUID del usuario
-  photoUrl: string; // Path en Supabase Storage
+  imageUrl: string; // URL de la imagen en Supabase Storage
+  type: "front" | "side" | "back" | "custom";
+  notes?: string;
+  weight?: number;
+  bodyFatPercentage?: number;
+  takenAt: Date;
   createdAt: Date;
+  updatedAt: Date;
 
-  // Información adicional del usuario
-  user?: {
-    id: string;
-    fullName: string;
+  // Medidas corporales opcionales
+  measurements?: {
+    chest?: number;
+    waist?: number;
+    hips?: number;
+    bicep?: number;
+    thigh?: number;
+    neck?: number;
   };
 }
 
 /**
- * CreateProgressPhotoRequest - Datos para subir una nueva foto de progreso
+ * CreateProgressPhotoRequest - Datos para crear una nueva foto de progreso
  */
 export interface CreateProgressPhotoRequest {
-  photoUrl: string; // URL después de subir a Storage
+  userId: string;
+  imageUri: string; // URI local de la imagen
+  type: "front" | "side" | "back" | "custom";
+  notes?: string;
+  weight?: number;
+  bodyFatPercentage?: number;
+  measurements?: {
+    chest?: number;
+    waist?: number;
+    hips?: number;
+    bicep?: number;
+    thigh?: number;
+    neck?: number;
+  };
+}
+
+/**
+ * UpdateProgressPhotoRequest - Datos para actualizar foto existente
+ */
+export interface UpdateProgressPhotoRequest {
+  id: number;
+  notes?: string;
+  weight?: number;
+  bodyFatPercentage?: number;
+  measurements?: {
+    chest?: number;
+    waist?: number;
+    hips?: number;
+    bicep?: number;
+    thigh?: number;
+    neck?: number;
+  };
 }
