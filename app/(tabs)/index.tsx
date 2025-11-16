@@ -18,7 +18,9 @@ import {
   useAuth,
   useExercises,
   useRoutines,
+  useSimpleWorkoutLogs,
   useTrainingPlans,
+  useUserPlans,
 } from "../../src/presentation/hooks";
 
 /**
@@ -177,7 +179,7 @@ export default function HomeScreen() {
             onViewExercises={handleViewExercises}
           />
         ) : (
-          <UserDashboard trainingPlans={trainingPlans} loading={plansLoading} />
+          <UserDashboard userId={usuario?.id} />
         )}
       </ScrollView>
     </SafeAreaView>
@@ -296,13 +298,60 @@ function TrainerDashboard({
 /**
  * Dashboard para usuarios regulares
  */
-function UserDashboard({
-  trainingPlans,
-  loading,
-}: {
-  trainingPlans: any[];
-  loading: boolean;
-}) {
+function UserDashboard({ userId }: { userId?: string }) {
+  const { plans, loading, error } = useUserPlans(userId);
+  const { createWorkoutLog, isCreating } = useSimpleWorkoutLogs(userId);
+  const [loggingWorkouts, setLoggingWorkouts] = useState<{
+    [key: number]: boolean;
+  }>({});
+
+  // Detectar problemas de keys duplicadas
+  React.useEffect(() => {
+    if (plans.length > 0) {
+      // Verificar rutinas duplicadas
+      plans.forEach((plan) => {
+        const routineIds = plan.routines?.map((r) => r.id) || [];
+        const uniqueIds = [...new Set(routineIds)];
+        if (routineIds.length !== uniqueIds.length) {
+          console.warn(
+            `❌ Plan ${plan.id} tiene rutinas con IDs duplicados:`,
+            routineIds
+          );
+        }
+      });
+    }
+  }, [plans]);
+
+  const handleLogWorkout = async (routineId: number, routineName: string) => {
+    setLoggingWorkouts((prev) => ({ ...prev, [routineId]: true }));
+
+    try {
+      const result = await createWorkoutLog(
+        routineId,
+        `Completé la rutina: ${routineName}`
+      );
+
+      if (result.success) {
+        Alert.alert(
+          "¡Excelente!",
+          `Rutina "${routineName}" completada exitosamente`
+        );
+      } else {
+        Alert.alert(
+          "Error",
+          result.error || "No se pudo registrar el entrenamiento"
+        );
+      }
+    } finally {
+      setLoggingWorkouts((prev) => ({ ...prev, [routineId]: false }));
+    }
+  };
+
+  const getDayName = (dayOfWeek: number) => {
+    const days = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+    return days[dayOfWeek === 7 ? 0 : dayOfWeek];
+  };
+
   return (
     <View style={styles.dashboardContent}>
       {/* Planes de entrenamiento asignados */}
@@ -313,22 +362,24 @@ function UserDashboard({
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Cargando planes...</Text>
           </View>
-        ) : trainingPlans.length > 0 ? (
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Error: {error}</Text>
+          </View>
+        ) : plans.length > 0 ? (
           <FlatList
-            data={trainingPlans}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
+            data={plans}
+            keyExtractor={(item, index) => `plan-${item.id}-${index}`}
+            renderItem={({ item: plan }) => (
               <View style={styles.planCard}>
                 <View style={styles.planHeader}>
                   <View style={styles.planHeaderLeft}>
                     <Text style={styles.planIcon}>💪</Text>
-                    <Text style={styles.planName}>{item.name}</Text>
+                    <Text style={styles.planName}>{plan.name}</Text>
                   </View>
                   <Text style={styles.planStatus}>Activo</Text>
                 </View>
-                {item.description && (
-                  <Text style={styles.planDescription}>{item.description}</Text>
-                )}
+
                 <View style={styles.planInfo}>
                   <View style={styles.planInfoItem}>
                     <Ionicons
@@ -337,29 +388,97 @@ function UserDashboard({
                       color="#6b7280"
                     />
                     <Text style={styles.planInfoText}>
-                      Inicio: {new Date(item.startDate).toLocaleDateString()}
+                      Desde: {new Date(plan.start_date).toLocaleDateString()}
                     </Text>
                   </View>
-                  {item.endDate && (
-                    <View style={styles.planInfoItem}>
-                      <Ionicons name="flag-outline" size={14} color="#6b7280" />
-                      <Text style={styles.planInfoText}>
-                        Fin: {new Date(item.endDate).toLocaleDateString()}
-                      </Text>
+                  <View style={styles.planInfoItem}>
+                    <Ionicons name="person-outline" size={14} color="#6b7280" />
+                    <Text style={styles.planInfoText}>
+                      Entrenador: {plan.trainer_name}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Rutinas del plan */}
+                <View style={styles.routinesContainer}>
+                  <Text style={styles.routinesTitle}>Rutinas:</Text>
+                  {(plan.routines || []).map((routine, routineIndex) => (
+                    <View
+                      key={`plan-${plan.id}-routine-${
+                        routine.id || routineIndex
+                      }-${routineIndex}`}
+                      style={styles.routineCard}
+                    >
+                      <View style={styles.routineHeader}>
+                        <View style={styles.routineInfo}>
+                          <Text style={styles.routineName}>{routine.name}</Text>
+                          <Text style={styles.routineDay}>
+                            {getDayName(routine.day_of_week)}
+                          </Text>
+                        </View>
+                        <TouchableOpacity
+                          style={[
+                            styles.logButton,
+                            (loggingWorkouts[routine.id] || isCreating) &&
+                              styles.logButtonLoading,
+                          ]}
+                          onPress={() =>
+                            handleLogWorkout(routine.id, routine.name)
+                          }
+                          disabled={loggingWorkouts[routine.id] || isCreating}
+                        >
+                          <Text style={styles.logButtonText}>
+                            {loggingWorkouts[routine.id] || isCreating
+                              ? "Guardando..."
+                              : "Completar"}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+
+                      {routine.description && (
+                        <Text style={styles.routineDescription}>
+                          {routine.description}
+                        </Text>
+                      )}
+
+                      {/* Ejercicios de la rutina */}
+                      {routine.exercises &&
+                        (routine.exercises || []).length > 0 && (
+                          <View style={styles.exercisesContainer}>
+                            <Text style={styles.exercisesTitle}>
+                              Ejercicios ({(routine.exercises || []).length}):
+                            </Text>
+                            {(routine.exercises || [])
+                              .slice(0, 3)
+                              .map((exercise, exerciseIndex) => (
+                                <View
+                                  key={`routine-${
+                                    routine.id || routineIndex
+                                  }-exercise-${
+                                    exercise.id || exerciseIndex
+                                  }-${exerciseIndex}`}
+                                  style={styles.exerciseItem}
+                                >
+                                  <Text style={styles.exerciseName}>
+                                    • {exercise.name}
+                                  </Text>
+                                  {exercise.sets && exercise.reps && (
+                                    <Text style={styles.exerciseDetails}>
+                                      {exercise.sets} series × {exercise.reps}
+                                    </Text>
+                                  )}
+                                </View>
+                              ))}
+                            {(routine.exercises || []).length > 3 && (
+                              <Text style={styles.moreExercises}>
+                                +{(routine.exercises || []).length - 3}{" "}
+                                ejercicios más
+                              </Text>
+                            )}
+                          </View>
+                        )}
                     </View>
-                  )}
-                  {item.trainer && (
-                    <View style={styles.planInfoItem}>
-                      <Ionicons
-                        name="person-outline"
-                        size={14}
-                        color="#6b7280"
-                      />
-                      <Text style={styles.planInfoText}>
-                        Entrenador: {item.trainer.fullName}
-                      </Text>
-                    </View>
-                  )}
+                  ))}
                 </View>
               </View>
             )}
@@ -390,39 +509,39 @@ function UserDashboard({
 
       {/* Acciones del usuario */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Explora y Entrena</Text>
+        <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
         <View style={styles.trainerMenuContainer}>
           <TouchableOpacity
             style={[styles.trainerMenuCard, { borderLeftColor: "#10b981" }]}
-            onPress={() => router.push("/(tabs)/explore")}
+            onPress={() => router.push("/(tabs)/progress")}
           >
             <View style={styles.menuCardContent}>
               <View style={styles.menuCardHeader}>
-                <Text style={styles.menuCardIcon}>🔍</Text>
-                <Text style={styles.menuCardTitle}>Explorar Ejercicios</Text>
+                <Text style={styles.menuCardIcon}>📸</Text>
+                <Text style={styles.menuCardTitle}>Fotos de Progreso</Text>
               </View>
               <Text style={styles.menuCardDescription}>
-                Descubre ejercicios y rutinas disponibles
+                Registra tu progreso con fotos
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
           </TouchableOpacity>
-
+{/* 
           <TouchableOpacity
             style={[styles.trainerMenuCard, { borderLeftColor: "#3b82f6" }]}
-            onPress={() => router.push("/(tabs)/chat")}
+            onPress={() => router.push("/(tabs)/workouts")}
           >
             <View style={styles.menuCardContent}>
               <View style={styles.menuCardHeader}>
-                <Text style={styles.menuCardIcon}>💬</Text>
-                <Text style={styles.menuCardTitle}>Chat con Entrenador</Text>
+                <Text style={styles.menuCardIcon}>💪</Text>
+                <Text style={styles.menuCardTitle}>Mis Entrenamientos</Text>
               </View>
               <Text style={styles.menuCardDescription}>
-                Comunícate con tu entrenador personal
+                Ve el historial de entrenamientos
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     </View>
@@ -738,5 +857,118 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 14,
     fontWeight: "600",
+  },
+
+  // Error state
+  errorContainer: {
+    backgroundColor: "#fef2f2",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  errorText: {
+    color: "#dc2626",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+
+  // Routines container
+  routinesContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#f3f4f6",
+  },
+  routinesTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1f2937",
+    marginBottom: 8,
+  },
+
+  // Routine card
+  routineCard: {
+    backgroundColor: "#f9fafb",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: "#3b82f6",
+  },
+  routineHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  routineInfo: {
+    flex: 1,
+  },
+  routineName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1f2937",
+  },
+  routineDay: {
+    fontSize: 12,
+    color: "#6b7280",
+    marginTop: 2,
+  },
+  routineDescription: {
+    fontSize: 12,
+    color: "#6b7280",
+    marginBottom: 8,
+  },
+
+  // Log button
+  logButton: {
+    backgroundColor: "#10b981",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  logButtonLoading: {
+    backgroundColor: "#6b7280",
+  },
+  logButtonText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  // Exercises
+  exercisesContainer: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#e5e7eb",
+  },
+  exercisesTitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: 6,
+  },
+  exerciseItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  exerciseName: {
+    fontSize: 11,
+    color: "#4b5563",
+    flex: 1,
+  },
+  exerciseDetails: {
+    fontSize: 11,
+    color: "#6b7280",
+    fontWeight: "500",
+  },
+  moreExercises: {
+    fontSize: 11,
+    color: "#9ca3af",
+    fontStyle: "italic",
+    marginTop: 4,
   },
 });
