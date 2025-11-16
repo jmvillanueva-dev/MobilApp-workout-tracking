@@ -4,22 +4,31 @@ import { SupabaseAuthRepository } from "../../data/repositories/SupabaseAuthRepo
 import { SupabaseExerciseRepository } from "../../data/repositories/SupabaseExerciseRepository";
 import { SupabaseFileRepository } from "../../data/repositories/SupabaseFileRepository";
 import { SupabaseProfileRepository } from "../../data/repositories/SupabaseProfileRepository";
+import { SupabaseProgressPhotoRepository } from "../../data/repositories/SupabaseProgressPhotoRepository";
 import { SupabaseRoutineRepository } from "../../data/repositories/SupabaseRoutineRepository";
 import { SupabaseTrainingPlanRepository } from "../../data/repositories/SupabaseTrainingPlanRepository";
+import { SupabaseUserRoutineRepository } from "../../data/repositories/SupabaseUserRoutineRepository";
+import { SupabaseWorkoutLogRepository } from "../../data/repositories/SupabaseWorkoutLogRepository";
 import { supabase } from "../../data/services/supabaseClient";
 import { IAuthRepository } from "../../domain/repositories/IAuthRepository";
 import { IExerciseRepository } from "../../domain/repositories/IExerciseRepository";
 import { IFileRepository } from "../../domain/repositories/IFileRepository";
 import { IProfileRepository } from "../../domain/repositories/IProfileRepository";
+import { IProgressPhotoRepository } from "../../domain/repositories/IProgressPhotoRepository";
 import { IRoutineRepository } from "../../domain/repositories/IRoutineRepository";
 import { IStorageRepository } from "../../domain/repositories/IStorageRepository";
 import { ITrainingPlanRepository } from "../../domain/repositories/ITrainingPlanRepository";
+import { IUserRoutineRepository } from "../../domain/repositories/IUserRoutineRepository";
+import { IWorkoutLogRepository } from "../../domain/repositories/IWorkoutLogRepository";
 import { AuthUseCase } from "../../domain/useCases/AuthUseCase";
 import { ExerciseUseCase } from "../../domain/useCases/ExerciseUseCase";
 import { MediaUseCase } from "../../domain/useCases/MediaUseCase";
 import { ProfileUseCase } from "../../domain/useCases/ProfileUseCase";
+import { ProgressPhotoUseCase } from "../../domain/useCases/ProgressPhotoUseCase";
 import { RoutineUseCase } from "../../domain/useCases/RoutineUseCase";
 import { TrainingPlanUseCase } from "../../domain/useCases/TrainingPlanUseCase";
+import { UserRoutineUseCase } from "../../domain/useCases/UserRoutineUseCase";
+import { WorkoutLogUseCase } from "../../domain/useCases/WorkoutLogUseCase";
 
 /**
  * Dependencias inyectadas en la aplicación
@@ -33,6 +42,9 @@ interface Dependencies {
   exerciseRepository: IExerciseRepository;
   routineRepository: IRoutineRepository;
   trainingPlanRepository: ITrainingPlanRepository;
+  userRoutineRepository: IUserRoutineRepository;
+  workoutLogRepository: IWorkoutLogRepository;
+  progressPhotoRepository: IProgressPhotoRepository;
 
   // Casos de uso
   authUseCase: AuthUseCase;
@@ -41,6 +53,9 @@ interface Dependencies {
   exerciseUseCase: ExerciseUseCase;
   routineUseCase: RoutineUseCase;
   trainingPlanUseCase: TrainingPlanUseCase;
+  userRoutineUseCase: UserRoutineUseCase;
+  workoutLogUseCase: WorkoutLogUseCase;
+  progressPhotoUseCase: ProgressPhotoUseCase;
 }
 
 /**
@@ -78,6 +93,9 @@ export const DependencyProvider: React.FC<{ children: ReactNode }> = ({
   const exerciseRepository = new SupabaseExerciseRepository();
   const routineRepository = new SupabaseRoutineRepository();
   const trainingPlanRepository = new SupabaseTrainingPlanRepository();
+  const userRoutineRepository = new SupabaseUserRoutineRepository();
+  const workoutLogRepository = new SupabaseWorkoutLogRepository();
+  const progressPhotoRepository = new SupabaseProgressPhotoRepository();
 
   // Crear casos de uso con dependency injection
   const authUseCase = new AuthUseCase(authRepository, storageRepository);
@@ -93,6 +111,11 @@ export const DependencyProvider: React.FC<{ children: ReactNode }> = ({
   );
   const routineUseCase = new RoutineUseCase(routineRepository);
   const trainingPlanUseCase = new TrainingPlanUseCase(trainingPlanRepository);
+  const userRoutineUseCase = new UserRoutineUseCase(userRoutineRepository);
+  const workoutLogUseCase = new WorkoutLogUseCase(workoutLogRepository);
+  const progressPhotoUseCase = new ProgressPhotoUseCase(
+    progressPhotoRepository
+  );
 
   const dependencies: Dependencies = {
     // Repositorios
@@ -103,6 +126,9 @@ export const DependencyProvider: React.FC<{ children: ReactNode }> = ({
     exerciseRepository,
     routineRepository,
     trainingPlanRepository,
+    userRoutineRepository,
+    workoutLogRepository,
+    progressPhotoRepository,
 
     // Casos de uso
     authUseCase,
@@ -111,6 +137,9 @@ export const DependencyProvider: React.FC<{ children: ReactNode }> = ({
     exerciseUseCase,
     routineUseCase,
     trainingPlanUseCase,
+    userRoutineUseCase,
+    workoutLogUseCase,
+    progressPhotoUseCase,
   };
 
   return (
