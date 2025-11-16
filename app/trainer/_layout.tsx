@@ -18,12 +18,27 @@ export default function TrainerLayout() {
           fontWeight: "600",
         },
         headerShadowVisible: false,
+        headerShown: false,
       }}
     >
       <Stack.Screen
         name="crear"
         options={{
           title: "Crear",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="crear-plan"
+        options={{
+          title: "Crear Plan",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="mis-planes"
+        options={{
+          title: "Mis Planes",
           headerShown: false,
         }}
       />
