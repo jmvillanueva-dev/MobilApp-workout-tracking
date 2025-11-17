@@ -3,6 +3,7 @@ import { AsyncStorageRepository } from "../../data/repositories/AsyncStorageRepo
 import { SupabaseAuthRepository } from "../../data/repositories/SupabaseAuthRepository";
 import { SupabaseExerciseRepository } from "../../data/repositories/SupabaseExerciseRepository";
 import { SupabaseFileRepository } from "../../data/repositories/SupabaseFileRepository";
+import { SupabaseMessageRepository } from "../../data/repositories/SupabaseMessageRepository";
 import { SupabaseProfileRepository } from "../../data/repositories/SupabaseProfileRepository";
 import { SupabaseProgressPhotoRepository } from "../../data/repositories/SupabaseProgressPhotoRepository";
 import { SupabaseRoutineRepository } from "../../data/repositories/SupabaseRoutineRepository";
@@ -13,6 +14,7 @@ import { supabase } from "../../data/services/supabaseClient";
 import { IAuthRepository } from "../../domain/repositories/IAuthRepository";
 import { IExerciseRepository } from "../../domain/repositories/IExerciseRepository";
 import { IFileRepository } from "../../domain/repositories/IFileRepository";
+import { IMessageRepository } from "../../domain/repositories/IMessageRepository";
 import { IProfileRepository } from "../../domain/repositories/IProfileRepository";
 import { IProgressPhotoRepository } from "../../domain/repositories/IProgressPhotoRepository";
 import { IRoutineRepository } from "../../domain/repositories/IRoutineRepository";
@@ -23,6 +25,7 @@ import { IWorkoutLogRepository } from "../../domain/repositories/IWorkoutLogRepo
 import { AuthUseCase } from "../../domain/useCases/AuthUseCase";
 import { ExerciseUseCase } from "../../domain/useCases/ExerciseUseCase";
 import { MediaUseCase } from "../../domain/useCases/MediaUseCase";
+import { MessageUseCase } from "../../domain/useCases/MessageUseCase";
 import { ProfileUseCase } from "../../domain/useCases/ProfileUseCase";
 import { ProgressPhotoUseCase } from "../../domain/useCases/ProgressPhotoUseCase";
 import { RoutineUseCase } from "../../domain/useCases/RoutineUseCase";
@@ -39,6 +42,7 @@ interface Dependencies {
   storageRepository: IStorageRepository;
   profileRepository: IProfileRepository;
   fileRepository: IFileRepository;
+  messageRepository: IMessageRepository;
   exerciseRepository: IExerciseRepository;
   routineRepository: IRoutineRepository;
   trainingPlanRepository: ITrainingPlanRepository;
@@ -50,6 +54,7 @@ interface Dependencies {
   authUseCase: AuthUseCase;
   profileUseCase: ProfileUseCase;
   mediaUseCase: MediaUseCase;
+  messageUseCase: MessageUseCase;
   exerciseUseCase: ExerciseUseCase;
   routineUseCase: RoutineUseCase;
   trainingPlanUseCase: TrainingPlanUseCase;
@@ -90,6 +95,7 @@ export const DependencyProvider: React.FC<{ children: ReactNode }> = ({
   const storageRepository = new AsyncStorageRepository();
   const profileRepository = new SupabaseProfileRepository(supabase);
   const fileRepository = new SupabaseFileRepository(supabase);
+  const messageRepository = new SupabaseMessageRepository(supabase);
   const exerciseRepository = new SupabaseExerciseRepository();
   const routineRepository = new SupabaseRoutineRepository();
   const trainingPlanRepository = new SupabaseTrainingPlanRepository();
@@ -105,6 +111,7 @@ export const DependencyProvider: React.FC<{ children: ReactNode }> = ({
     authRepository
   );
   const mediaUseCase = new MediaUseCase(); // TODO: Refactorizar también
+  const messageUseCase = new MessageUseCase(messageRepository, authRepository);
   const exerciseUseCase = new ExerciseUseCase(
     exerciseRepository,
     fileRepository
@@ -123,6 +130,7 @@ export const DependencyProvider: React.FC<{ children: ReactNode }> = ({
     storageRepository,
     profileRepository,
     fileRepository,
+    messageRepository,
     exerciseRepository,
     routineRepository,
     trainingPlanRepository,
@@ -134,6 +142,7 @@ export const DependencyProvider: React.FC<{ children: ReactNode }> = ({
     authUseCase,
     profileUseCase,
     mediaUseCase,
+    messageUseCase,
     exerciseUseCase,
     routineUseCase,
     trainingPlanUseCase,
