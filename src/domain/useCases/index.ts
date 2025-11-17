@@ -1,6 +1,7 @@
 export * from "./AuthUseCase";
 export * from "./ExerciseUseCase";
 export * from "./MediaUseCase";
+export * from "./MessageUseCase";
 export * from "./ProfileUseCase";
 export * from "./RoutineUseCase";
 export * from "./TrainingPlanUseCase";
