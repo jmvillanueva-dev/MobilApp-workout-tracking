@@ -1,6 +1,7 @@
 export * from "./IAuthRepository";
 export * from "./IExerciseRepository";
 export * from "./IFileRepository";
+export * from "./IMessageRepository";
 export * from "./IProfileRepository";
 export * from "./IProgressPhotoRepository";
 export * from "./IRoutineRepository";
