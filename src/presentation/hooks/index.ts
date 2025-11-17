@@ -3,6 +3,7 @@ export { useAuth } from "../contexts/AuthProvider";
 export { useProfile } from "./useProfile";
 
 // Hooks específicos de funcionalidad
+export { useChat } from "./useChat";
 export { useExercises } from "./useExercises";
 export { useProgressPhotos } from "./useProgressPhotos";
 export { useRoutines } from "./useRoutines";

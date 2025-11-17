@@ -63,10 +63,14 @@ export function useAuthLogic() {
           console.log("🚪 Usuario desconectado, navegando a login...");
           // Limpiar storage
           await storageRepository.removeItem("wtapp_current_user");
-          // Usar setTimeout para evitar conflictos de navegación
+          // Usar setTimeout más largo para asegurar que el componente se desmonte correctamente
           setTimeout(() => {
-            router.replace("/auth/login");
-          }, 100);
+            try {
+              router.replace("/auth/login");
+            } catch (error) {
+              console.warn("Error al navegar a login:", error);
+            }
+          }, 300);
         }
 
         // Actualizar el usuario y guardar la referencia
