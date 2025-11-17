@@ -11,3 +11,6 @@ export * from "./TrainingPlan";
 // Modelos de progreso y logs
 export * from "./Progress";
 export * from "./WorkoutLog";
+
+// Modelos de mensajería
+export * from "./Message";
