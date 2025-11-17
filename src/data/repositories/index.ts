@@ -5,6 +5,7 @@ export * from "./SupabaseAuthRepository";
 // Repositorios específicos de Supabase
 export * from "./SupabaseExerciseRepository";
 export * from "./SupabaseFileRepository";
+export * from "./SupabaseMessageRepository";
 export * from "./SupabaseProfileRepository";
 export * from "./SupabaseRoutineRepository";
 export * from "./SupabaseTrainingPlanRepository";
