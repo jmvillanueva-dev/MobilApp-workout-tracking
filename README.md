@@ -1,50 +1,97 @@
-# Welcome to your Expo app 👋
+# Workout Tracking App (Expo + Supabase)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Resumen
+Aplicación móvil desarrollada con **React Native (Expo)** y organizada con una **arquitectura limpia (Clean Architecture)**. Permite la gestión de ejercicios, rutinas, planes de entrenamiento, seguimiento de progreso con fotos y comunicación en tiempo real entre entrenadores y usuarios mediante Supabase.
 
-## Get started
+## Tecnologías principales
+- Expo / React Native
+- TypeScript
+- Supabase (Auth, Storage, Realtime, Database)
+- AsyncStorage
+- Expo ImagePicker / AV / Video
+- @expo/vector-icons
 
-1. Install dependencies
+## Funcionalidades principales
+- **Autenticación y perfiles**
+  - Registro e inicio de sesión con Supabase.
+  - Perfiles con avatar y datos del usuario.
+  - Roles: `entrenador` y `usuario`.
 
-   ```bash
-   npm install
-   ```
+- **Gestión de contenido (especialmente para entrenadores)**
+  - Crear/editar/eliminar ejercicios (con soporte para video).
+  - Crear/editar/eliminar rutinas y planes de entrenamiento.
+  - Asignar rutinas/planes a usuarios.
 
-2. Start the app
+- **Usuarios**
+  - Ver rutinas y planes asignados.
+  - Completar rutinas y registrar entrenamientos (workout logs).
+  - Subir fotos de progreso (progress photos).
 
-   ```bash
-   npx expo start
-   ```
+- **Chat en tiempo real**
+  - Chat global usando Supabase Realtime.
+  - Indicador de escritura y lista de mensajes con burbujas.
 
-In the output, you'll find options to open the app in a
+- **Dashboard dinámico**
+  - Vista adaptada al rol del usuario (entrenador/usuario).
+  - Estadísticas rápidas y acciones rápidas para crear contenido.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+## Estructura del proyecto (resumen)
+```
+app/                # Rutas y pantallas (file-based routing de Expo Router)
+src/
+ ├─ domain/         # Modelos, interfaces y casos de uso
+ ├─ data/           # Implementaciones de repositorios y cliente Supabase
+ └─ presentation/   # Hooks, componentes, providers y pantallas
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Requisitos previos
+- Node.js (v16+ recomendado)
+- npm o yarn
+- Expo CLI (`npm install -g expo-cli`) o usar `npx expo`
 
-## Learn more
+## Instalación y ejecución
+1. Instalar dependencias:
+```bash
+npm install
+```
+2. Crear archivo de entorno a partir del ejemplo y configurar Supabase:
+```bash
+cp .env.example .env
+# Edita .env y coloca EXPO_PUBLIC_SUPABASE_URL y EXPO_PUBLIC_SUPABASE_ANON_KEY
+```
+3. Iniciar la aplicación en modo desarrollo:
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Archivos importantes
+- `app/` – Contiene las rutas y pantallas principales (index, tabs, auth, trainer, users).
+- `src/presentation/hooks` – Hooks personalizados para Auth, Routines, Exercises, Profile, Chat, etc.
+- `src/data/repositories` – Implementaciones que interactúan con Supabase y AsyncStorage.
+- `src/data/services/supabaseClient.ts` – Cliente de conexión a Supabase.
+- `.env.example` – Variables de entorno necesarias.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Configuración de Supabase (resumen)
+- Habilita Auth (correo/contraseña) y Storage (para imágenes/videos).
+- Crea tablas necesarias para usuarios, ejercicios, rutinas, planes, mensajes y fotos de progreso (el código del proyecto maneja la estructura esperada).
+- Obtén `anon key` y `url` y colócalos en el archivo `.env` como se indica en `.env.example`.
 
-## Join the community
+## Buenas prácticas y notas
+- Mantén las claves sensibles fuera del repositorio público.
+- Usa entornos separados para desarrollo y producción en Supabase.
+- Revisa las políticas de RLS (Row Level Security) en Supabase cuando publiques datos sensibles o archivos en Storage.
+- Las rutas y pantallas usan `expo-router` (file-based routing) — revisa `app/` para entender la navegación.
 
-Join our community of developers creating universal apps.
+## Contribuciones
+Si deseas contribuir:
+1. Haz un fork del repositorio.
+2. Crea una rama con tu cambio: `git checkout -b feat/mi-mejora`
+3. Envía un Pull Request describiendo los cambios.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Licencia
+Este proyecto está abierto para uso y contribuciones.
+
+
+**Autor:** Jhonny Villanueva Montoya
+
+Repositorio: `jmvillanueva-dev/mobilapp-workout-tracking`
